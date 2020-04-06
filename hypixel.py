@@ -66,11 +66,13 @@ class PlayerCompare():
                     new_row.append(round(int(table[i - 1][j + 1]) / int(table[i][j + 1]) * 1000) / 1000)
                 table.insert(i + 1, list(map(str, new_row)))
 
-        # Highlight stat leaders, but skip the first row because it is just usernames
-        for i, row in enumerate(table[1:]):
-            best = min(map(float, row[1:])) if row[0] in ['Deaths', 'Final Deaths'] else max(map(float, row[1:]))
-            best = re.sub(r'.0$', '', str(best))
-            table[i + 1] = ['!!! ' + best if cell == best else cell for cell in row]# ['★★★ ' + best if cell == best else cell for cell in row]
+        # if more than one player is being requested...
+        if len(self.igns) > 1:
+            # Highlight stat leaders, but skip the first row because it is just usernames
+            for i, row in enumerate(table[1:]):
+                best = min(map(float, row[1:])) if row[0] in ['Deaths', 'Final Deaths'] else max(map(float, row[1:]))
+                best = re.sub(r'.0$', '', str(best))
+                table[i + 1] = ['!!! ' + best if cell == best else cell for cell in row]# ['★★★ ' + best if cell == best else cell for cell in row]
 
         return table
 
