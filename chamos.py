@@ -1,12 +1,13 @@
+import logging
+import datetime
+
 import discord
 import tools
+import hypixel
 
-class MyClient(discord.Client):
+class ChamosBot(discord.Client):
     async def on_ready(self):
-        print('Logged in as')
-        print(self.user.name)
-        print(self.user.id)
-        print('------')
+        logging.info('Logged in as {0}, id {1}'.format(self.user.name, self.user.id))
 
     async def on_message(self, message):
         # we do not want the bot to reply to itself
@@ -14,15 +15,25 @@ class MyClient(discord.Client):
             return
 
         if message.content.startswith('!ip'):
+            logging.debug('Requesting server IP')
             await message.channel.send('The *survival* server\'s ip is icecraft.hosthorde.net. This IP isn\'t going to change anytime soon! The *PVP* server\'s IP is currently {0}. Heads up, this IP tends to change!'.format(tools.get_ip()))
+            logging.info('Successfully served server IP')
         elif message.content.startswith('pls corgi'):
+            logging.debug('Getting corgi gif')
             gif = await tools.get_gif('corgi')
             await message.channel.send(gif)
             await message.channel.send('https://www.danasilver.org/giphymessages/PoweredBy_Horizontal_Light-Backgrounds.gif')
-        elif message.content.startswith('xfavor playlist'):
-            # Send messages to tell rhythm to play the entire playlist
-            pass
-            
+            logging.info('Successfully served corgi gif')
+        elif message.content.startswith('!stats'):
+            # Message should be !stats bedwars ign ign ign
+            logging.debug('Stats requested with "{0}"'.format(message.content))
+            usernames  = message.content.split()[2:]
+            logging.debug('Usernames: {0}'.format(', '.join(usernames)))
+            comparison = hypixel.PlayerCompare(usernames)
+            final_msg  = '```\n{0}\n```'.format(comparison.bedwars())
+            await message.channel.send(final_msg)
+            logging.info('Successfully served stat comparison for {0}'.format(', '.join(usernames)))
+
 
     async def on_member_join(self, member):
         guild = member.guild
@@ -32,5 +43,7 @@ class MyClient(discord.Client):
             # await member.add_roles(tools.Memeber)
 
 
-client = MyClient()
+logging.basicConfig(filename='logs/{0}.log'.format(datetime.datetime.now().strftime('%Y%m%d')), level=logging.DEBUG)
+
+client = ChamosBot()
 client.run('NjI1NTAxMDcyMzk5NTMyMDQy.XYmeEg.FYz9nmX0CNxJa2n3wa7e9Hoq6Sw')
