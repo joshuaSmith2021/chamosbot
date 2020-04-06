@@ -1,11 +1,14 @@
 import requests
 import re
 import random
+import json
 
 import giphy_client as gif
 from giphy_client.rest import ApiException
 
 giphy = gif.DefaultApi()
+
+giphy_key = json.loads(open('credentials.json').read())['giphy-api-key']
 
 def get_ip():
     page = requests.get('https://secret-forest-58202.herokuapp.com/').text
@@ -14,7 +17,7 @@ def get_ip():
 
 async def get_gif(query):
     try:
-        giphy_token = 'tiF0yt05LjvjDWtN3FcO0UY70NWXC9DL'
+        giphy_token = giphy_key
         response = giphy.gifs_search_get(giphy_token, query, limit=20, rating='g')
         gifs = list(response.data)
         random.shuffle(gifs)
