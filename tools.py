@@ -12,10 +12,6 @@ def get_ip():
     return re.findall(r'0\.tcp\.ngrok\.io:[0-9]{5}', page)[0]
 
 
-class Memeber():
-    id = ''
-
-
 async def get_gif(query):
     try:
         giphy_token = 'tiF0yt05LjvjDWtN3FcO0UY70NWXC9DL'
@@ -25,4 +21,3 @@ async def get_gif(query):
         return gifs[0].url
     except ApiException as e:
         return 'Uh oh gamers, I couldn\'t grab the {0} gif...'.format(query)
-

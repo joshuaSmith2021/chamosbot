@@ -19,6 +19,10 @@ class MyClient(discord.Client):
             gif = await tools.get_gif('corgi')
             await message.channel.send(gif)
             await message.channel.send('https://www.danasilver.org/giphymessages/PoweredBy_Horizontal_Light-Backgrounds.gif')
+        elif message.content.startswith('xfavor playlist'):
+            # Send messages to tell rhythm to play the entire playlist
+            pass
+            
 
     async def on_member_join(self, member):
         guild = member.guild
