@@ -4,7 +4,7 @@ import requests
 
 from utils import matrix
 
-hypixel_api = json.loads(open('hypixel-api.json').read())
+hypixel_api = json.loads(open('credentials.json').read())['hypixel-api-key']
 
 class PlayerCompare():
     def bedwars(self):
@@ -80,7 +80,7 @@ class PlayerCompare():
         self.igns  = igns
         self.datas = []
         for ign in igns:
-            self.datas.append(requests.get('https://api.hypixel.net/player?key={0}&name={1}'.format(hypixel_api['api-key'], ign)).json())
+            self.datas.append(requests.get('https://api.hypixel.net/player?key={0}&name={1}'.format(hypixel_api, ign)).json())
 
 
 if __name__ == '__main__':

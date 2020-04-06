@@ -1,5 +1,8 @@
+#!/usr/bin/python3
+
 import logging
 import datetime
+import json
 
 import discord
 import tools
@@ -45,5 +48,7 @@ class ChamosBot(discord.Client):
 
 logging.basicConfig(filename='logs/{0}.log'.format(datetime.datetime.now().strftime('%Y%m%d')), level=logging.DEBUG)
 
+discord_secret = json.loads(open('credentials.json').read())['discord-token'] 
+
 client = ChamosBot()
-client.run('NjI1NTAxMDcyMzk5NTMyMDQy.XYmeEg.FYz9nmX0CNxJa2n3wa7e9Hoq6Sw')
+client.run(discord_secret)
