@@ -74,7 +74,7 @@ class PlayerCompare():
             best = min(map(float, row[1:])) if row[0] in ['Deaths', 'Final Deaths'] else max(map(float, row[1:]))
             best = re.sub(r'.0$', '', str(best))
             print(best, row)
-            table[i + 1] = ['X ' + best if cell == best else cell for cell in row]
+            table[i + 1] = ['★★★ ' + best if cell == best else cell for cell in row]
 
         return table
 
@@ -86,56 +86,9 @@ class PlayerCompare():
 
 
 if __name__ == '__main__':
-    playercomp = PlayerCompare(['parcerx', 'GL4CIER_FIST', 'ronansfire'])
+    playercomp = PlayerCompare(['parcerx', 'GL4CIER_FIST', 'ronansfire', 'Red_Lightning9', 'Catwing37'])
     result = (playercomp.bedwars())
 
     print(result)
 
     exit()
-
-
-
-
-
-
-    rows = {}
-    display = matrix.Table(just='right')
-
-    statistics = response['player']['stats']['Bedwars']
-    # list of stats to focus on
-    stats = [
-                {
-                    'key_name': 'eight_one_wins_bedwars',
-                    'display': 'Solo Wins'
-                }, {
-                    'key_name': 'eight_two_wins_bedwars',
-                    'display': 'Duos Wins'
-                }, {
-                    'key_name': 'four_four_wins_bedwars',
-                    'display': 'Trios Wins'
-                }, {
-                    'key_name': 'four_three_wins_bedwars',
-                    'display': 'Quads Wins'
-                }, {
-                    'key_name': 'wins_bedwars',
-                    'display': 'Total Wins'
-                }, {
-                    'key_name': 'kills_bedwars',
-                    'display': 'Kills'
-                }, {
-                    'key_name': 'deaths_bedwars',
-                    'display': 'Deaths'
-                }, {
-                    'key_name': 'final_kills_bedwars',
-                    'display': 'Final Kills'
-                }, {
-                    'key_name': 'final_deaths_bedwars',
-                    'display': 'Final Deaths'
-                }
-            ]
-
-    for stat in stats:
-        rows[stat['display']] = statistics[stat['key_name']]
-
-
-    print(rows)
