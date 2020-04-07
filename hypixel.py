@@ -86,7 +86,7 @@ class PlayerCompare():
 
         table = self.__build_table(datasets, stats, ratios=ratios)
 
-        return table if self.igns == 1 else self.__highlight_winners(table, ['Deaths', 'Final Deaths'])
+        return table if len(self.igns) == 1 else self.__highlight_winners(table, ['Deaths', 'Final Deaths'])
 
     def skywars(self):
         table = matrix.Table(just='right')
@@ -128,7 +128,7 @@ class PlayerCompare():
 
         table = self.__build_table(datasets, stats, ratios=ratios)
 
-        return table if self.igns == 1 else self.__highlight_winners(table, ['Total Deaths'])
+        return table if len(self.igns) == 1 else self.__highlight_winners(table, ['Total Deaths'])
 
 
     def __init__(self, igns):

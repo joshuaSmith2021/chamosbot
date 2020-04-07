@@ -28,14 +28,18 @@ class ChamosBot(discord.Client):
             await message.channel.send('https://www.danasilver.org/giphymessages/PoweredBy_Horizontal_Light-Backgrounds.gif')
             logging.info('Successfully served corgi gif')
         elif message.content.startswith('!stats'):
-            # Message should be !stats bedwars ign ign ign
+            # Message should be !stats [bedwars|skywars] ign ign ign
             logging.debug('Stats requested with "{0}"'.format(message.content))
-            usernames  = message.content.split()[2:]
-            logging.debug('Usernames: {0}'.format(', '.join(usernames)))
+            parameters = message.content.split()[1:]
+
+            game = parameters[0]
+            usernames  = parameters[1:]
+            logging.debug('Game: {1}; Usernames: {0}'.format(', '.join(usernames), game))
+
             comparison = hypixel.PlayerCompare(usernames)
-            final_msg  = '```\n{0}\n```'.format(comparison.bedwars())
+            final_msg  = '```\n{0}\n```'.format(comparison.bedwars() if game.lower() == 'bedwars' else comparison.skywars() if game.lower() == 'skywars' else 'Oops, looks like the game you asked for is invalid! Try "Bedwars" or "Skywars"!')
             await message.channel.send(final_msg)
-            logging.info('Successfully served stat comparison for {0}'.format(', '.join(usernames)))
+            logging.info('Successfully served {1} stat comparison for {0}'.format(', '.join(usernames), game))
 
 
     async def on_member_join(self, member):
