@@ -15,15 +15,29 @@ class PlayerCompare():
         for stat in stats:
             table.append([stat['display']] + list(map(lambda x: str(x.get(stat['key_name'], 0)), datasets)))
 
+
+        if ratios is not None:
+            for ratio in ratios:
+                new_row = [ratio['display']]
+                for dataset in datasets:
+                    # Substitute in the actual values for calculation using re.sub
+                    expression = re.sub(r'[^+\-*/\s\(\)]+', lambda x: str(dataset[x.group(0)]), ratio['calculate'])
+                    # Use python eval and add the element to the list
+                    new_row.append(str(round(eval(expression) * 1000) / 1000))
+
+                # This bit is a little complicated, but I use zip(*table)[0] to get a list of the
+                #   row titles, then I get the index of the correct row and add 1 to it in order
+                #   to insert the new row in the desired position
+                table.insert(list(zip(*table))[0].index(ratio['position']) + 1, new_row)
         # Replace death stats with KDRs
-        for i, row in enumerate(table):
-            # title, p1, p2 = row
-            title = row[0]
-            if title in ratios.keys():
-                new_row = [ratios[title]]
-                for j, value in enumerate(row[1:]):
-                    new_row.append(round(int(table[i - 1][j + 1]) / int(table[i][j + 1]) * 1000) / 1000)
-                table.insert(i + 1, list(map(str, new_row)))
+        #for i, row in enumerate(table):
+        #    # title, p1, p2 = row
+        #    title = row[0]
+        #    if title in ratios.keys():
+        #        new_row = [ratios[title]]
+        #        for j, value in enumerate(row[1:]):
+        #            new_row.append(round(int(table[i - 1][j + 1]) / int(table[i][j + 1]) * 1000) / 1000)
+        #        table.insert(i + 1, list(map(str, new_row)))
 
         return table
 
@@ -42,11 +56,27 @@ class PlayerCompare():
 
         datasets = list(map(lambda x: x['player']['stats']['Bedwars'], self.datas))
 
-        # Deaths must always be after kills, and final deaths after final kills!!!
-        # Stats that are turned into ratios should have the numerator stat one index
-        #   before the denominator stat. For example, KDR is kills/deaths, so deaths
-        #   should come after kills.
-        ratios = {'Deaths': 'KDR', 'Final Deaths': 'Final KDR', 'Games Played': 'Win %'}
+        # ratios is a list of categories that are calculated from other values in the data.
+        #   Each dictionary shoould have three attrivutes:
+        #   - display, which represents the name of the row on the final table
+        #   - calculate, a string representing how the value is calculated.
+        #     This string is later put through Python's eval() function
+        #   - position, the name of the row that the result should end up under.
+        ratios = [
+                    {
+                        'display'  : 'KDR',
+                        'calculate': 'kills_bedwars / deaths_bedwars',
+                        'position' : 'Deaths'
+                    }, {
+                        'display'  : 'Win %',
+                        'calculate': 'wins_bedwars / games_played_bedwars',
+                        'position' : 'Games Played'
+                    }, {
+                        'display'  : 'Final KDR',
+                        'calculate': 'final_kills_bedwars / final_deaths_bedwars',
+                        'position' : 'Final Deaths'
+                    }
+            ]
         stats  = [
                     {
                         'key_name': 'eight_one_wins_bedwars',
@@ -97,7 +127,17 @@ class PlayerCompare():
         # Stats that are turned into ratios should have the numerator stat one index
         #   before the denominator stat. For example, KDR is kills/deaths, so deaths
         #   should come after kills.
-        ratios = {'Total Deaths': 'KDR', 'Games Played': 'Win %'}
+        ratios = [
+                    {
+                        'display'  : 'KDR',
+                        'calculate': 'kills / deaths',
+                        'position' : 'Deaths'
+                    }, {
+                        'display'  : 'Win %',
+                        'calculate': 'wins / games',
+                        'position' : 'Games Played'
+                    }
+            ]
         stats  = [
                     {
                         'key_name': 'wins_solo',
@@ -119,16 +159,59 @@ class PlayerCompare():
                         'display': 'Games Played'
                     }, {
                         'key_name': 'kills',
-                        'display': 'Total Kills'
+                        'display': 'Kills'
                     }, {
                         'key_name': 'deaths',
-                        'display': 'Total Deaths'
+                        'display': 'Deaths'
                     }
                 ]
 
         table = self.__build_table(datasets, stats, ratios=ratios)
 
         return table if len(self.igns) == 1 else self.__highlight_winners(table, ['Total Deaths'])
+
+    def pit(self):
+        table = matrix.Table(just='right')
+
+        datasets = list(map(lambda x: x['player']['stats']['Pit']['pit_stats_ptl'], self.datas))
+
+        # Deaths must always be after kills, and final deaths after final kills!!!
+        # Stats that are turned into ratios should have the numerator stat one index
+        #   before the denominator stat. For example, KDR is kills/deaths, so deaths
+        #   should come after kills.
+        ratios = [
+                    {
+                        'display': 'KDR',
+                        'calculate': 'kills / deaths',
+                        'position': 'Deaths'
+                    }, {
+                        'display': 'K+A DR',
+                        'calculate': '(kills + assists) / deaths',
+                        'position': 'KDR'
+                    }
+            ]
+        stats  = [
+                    {
+                        'key_name': 'playtime_minutes',
+                        'display': 'Minutes'
+                    }, {
+                        'key_name': 'kills',
+                        'display': 'Kills'
+                    }, {
+                        'key_name': 'assists',
+                        'display': 'Assists'
+                    }, {
+                        'key_name': 'deaths',
+                        'display': 'Deaths'
+                    }, {
+                        'key_name': 'max_streak',
+                        'display': 'Best Streak'
+                    }
+                ]
+
+        table = self.__build_table(datasets, stats, ratios=ratios)
+
+        return table if len(self.igns) == 1 else self.__highlight_winners(table, ['Deaths'])
 
 
     def __init__(self, igns):
@@ -155,6 +238,6 @@ if __name__ == '__main__':
     playercomp = PlayerCompare(['parcerx', 'GL4CIER_FIST', 'ronansfire', 'Red_Lightning9', 'Catwing37'])
     #result = (playercomp.bedwars())
 
-    print(playercomp.skywars())
+    print(playercomp.pit())
 
     exit()
