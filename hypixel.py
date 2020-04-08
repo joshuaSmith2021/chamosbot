@@ -7,7 +7,10 @@ from utils import matrix
 hypixel_api = json.loads(open('credentials.json').read())['hypixel-api-key']
 
 class PlayerCompare():
-    def __build_table(self, datasets, stats, ratios=None):
+    def __build_table(self):
+        datasets = self.datasets
+        stats = self.stats
+        ratios = self.ratios
         table = matrix.Table(just='right')
 
         # Construct basic table, but make every entry a string
@@ -29,19 +32,11 @@ class PlayerCompare():
                 #   row titles, then I get the index of the correct row and add 1 to it in order
                 #   to insert the new row in the desired position
                 table.insert(list(zip(*table))[0].index(ratio['position']) + 1, new_row)
-        # Replace death stats with KDRs
-        #for i, row in enumerate(table):
-        #    # title, p1, p2 = row
-        #    title = row[0]
-        #    if title in ratios.keys():
-        #        new_row = [ratios[title]]
-        #        for j, value in enumerate(row[1:]):
-        #            new_row.append(round(int(table[i - 1][j + 1]) / int(table[i][j + 1]) * 1000) / 1000)
-        #        table.insert(i + 1, list(map(str, new_row)))
 
-        return table
+        return table if len(self.igns) == 1 else self.__highlight_winners(table)
 
-    def __highlight_winners(self, table, specials):
+    def __highlight_winners(self, table):
+        specials = self.reverse_stats
         # table is a matrix.Table, specials is a list of stats
         #   where the lower number is better, ie deaths
         for i, row in enumerate(table[1:]):
@@ -51,172 +46,11 @@ class PlayerCompare():
 
         return table
 
-    def bedwars(self):
-        table = matrix.Table(just='right')
-
-        datasets = list(map(lambda x: x['player']['stats']['Bedwars'], self.datas))
-
-        # ratios is a list of categories that are calculated from other values in the data.
-        #   Each dictionary shoould have three attrivutes:
-        #   - display, which represents the name of the row on the final table
-        #   - calculate, a string representing how the value is calculated.
-        #     This string is later put through Python's eval() function
-        #   - position, the name of the row that the result should end up under.
-        ratios = [
-                    {
-                        'display'  : 'KDR',
-                        'calculate': 'kills_bedwars / deaths_bedwars',
-                        'position' : 'Deaths'
-                    }, {
-                        'display'  : 'Win %',
-                        'calculate': 'wins_bedwars / games_played_bedwars',
-                        'position' : 'Games Played'
-                    }, {
-                        'display'  : 'Final KDR',
-                        'calculate': 'final_kills_bedwars / final_deaths_bedwars',
-                        'position' : 'Final Deaths'
-                    }
-            ]
-        stats  = [
-                    {
-                        'key_name': 'eight_one_wins_bedwars',
-                        'display': 'Solo Wins'
-                    }, {
-                        'key_name': 'eight_two_wins_bedwars',
-                        'display': 'Duos Wins'
-                    }, {
-                        'key_name': 'four_four_wins_bedwars',
-                        'display': 'Trios Wins'
-                    }, {
-                        'key_name': 'four_three_wins_bedwars',
-                        'display': '4v4v4v4 Wins'
-                    }, {
-                        'key_name': 'two_four_wins_bedwars',
-                        'display': '4v4 Wins'
-                    }, {
-                        'key_name': 'wins_bedwars',
-                        'display': 'Total Wins'
-                    }, {
-                        'key_name': 'games_played_bedwars',
-                        'display': 'Games Played'
-                    }, {
-                        'key_name': 'kills_bedwars',
-                        'display': 'Kills'
-                    }, {
-                        'key_name': 'deaths_bedwars',
-                        'display': 'Deaths'
-                    }, {
-                        'key_name': 'final_kills_bedwars',
-                        'display': 'Final Kills'
-                    }, {
-                        'key_name': 'final_deaths_bedwars',
-                        'display': 'Final Deaths'
-                    }
-                ]
-
-        table = self.__build_table(datasets, stats, ratios=ratios)
-
-        return table if len(self.igns) == 1 else self.__highlight_winners(table, ['Deaths', 'Final Deaths'])
-
-    def skywars(self):
-        table = matrix.Table(just='right')
-
-        datasets = list(map(lambda x: x['player']['stats']['SkyWars'], self.datas))
-
-        # Deaths must always be after kills, and final deaths after final kills!!!
-        # Stats that are turned into ratios should have the numerator stat one index
-        #   before the denominator stat. For example, KDR is kills/deaths, so deaths
-        #   should come after kills.
-        ratios = [
-                    {
-                        'display'  : 'KDR',
-                        'calculate': 'kills / deaths',
-                        'position' : 'Deaths'
-                    }, {
-                        'display'  : 'Win %',
-                        'calculate': 'wins / games',
-                        'position' : 'Games Played'
-                    }
-            ]
-        stats  = [
-                    {
-                        'key_name': 'wins_solo',
-                        'display': 'Solo Wins'
-                    }, {
-                        'key_name': 'wins_team',
-                        'display': 'Team Wins'
-                    }, {
-                        'key_name': 'wins_mega',
-                        'display': 'Mega Wins'
-                    }, {
-                        'key_name': 'wins_ranked',
-                        'display': 'Ranked Wins'
-                    }, {
-                        'key_name': 'wins',
-                        'display': 'Total Wins'
-                    }, {
-                        'key_name': 'games',
-                        'display': 'Games Played'
-                    }, {
-                        'key_name': 'kills',
-                        'display': 'Kills'
-                    }, {
-                        'key_name': 'deaths',
-                        'display': 'Deaths'
-                    }
-                ]
-
-        table = self.__build_table(datasets, stats, ratios=ratios)
-
-        return table if len(self.igns) == 1 else self.__highlight_winners(table, ['Total Deaths'])
-
-    def pit(self):
-        table = matrix.Table(just='right')
-
-        datasets = list(map(lambda x: x['player']['stats']['Pit']['pit_stats_ptl'], self.datas))
-
-        # Deaths must always be after kills, and final deaths after final kills!!!
-        # Stats that are turned into ratios should have the numerator stat one index
-        #   before the denominator stat. For example, KDR is kills/deaths, so deaths
-        #   should come after kills.
-        ratios = [
-                    {
-                        'display': 'KDR',
-                        'calculate': 'kills / deaths',
-                        'position': 'Deaths'
-                    }, {
-                        'display': 'K+A DR',
-                        'calculate': '(kills + assists) / deaths',
-                        'position': 'KDR'
-                    }
-            ]
-        stats  = [
-                    {
-                        'key_name': 'playtime_minutes',
-                        'display': 'Minutes'
-                    }, {
-                        'key_name': 'kills',
-                        'display': 'Kills'
-                    }, {
-                        'key_name': 'assists',
-                        'display': 'Assists'
-                    }, {
-                        'key_name': 'deaths',
-                        'display': 'Deaths'
-                    }, {
-                        'key_name': 'max_streak',
-                        'display': 'Best Streak'
-                    }
-                ]
-
-        table = self.__build_table(datasets, stats, ratios=ratios)
-
-        return table if len(self.igns) == 1 else self.__highlight_winners(table, ['Deaths'])
-
-
     def __init__(self, igns):
-        self.igns  = igns
+        self.igns = igns
+        self.datasets = []
         self.datas = []
+        self.fails = []
         for ign in igns:
             self.datas.append(requests.get('https://api.hypixel.net/player?key={0}&name={1}'.format(hypixel_api, ign)).json())
 
@@ -232,12 +66,167 @@ class PlayerCompare():
             bad_index = self.igns.index(bad_name)
             del self.igns[bad_index]
             del self.datas[bad_index]
+            self.fails.append(bad_name)
+
+        # Build datasets
+        for i, data in enumerate(self.datas):
+            dataset = data
+            for key in self.keys:
+                dataset = dataset[key]
+            self.datasets.append(dataset)
+
+    def __str__(self):
+        table = self.__build_table()
+        fail_string = ''
+        if len(self.fails) > 0:
+            fail_string = '\n\nNo data found for the following player{0}: {1}'.format('s' if len(self.fails) > 1 else '', ', '.join(self.fails))
+            fail_string += '\nTry checking the spelling of the name'
+        return '{0}{1}'.format(str(table), fail_string)
+
+
+class Bedwars(PlayerCompare):
+    keys = ['player', 'stats', 'Bedwars']
+    ratios = [
+                    {
+                        'display'  : 'KDR',
+                        'calculate': 'kills_bedwars / deaths_bedwars',
+                        'position' : 'Deaths'
+                    }, {
+                        'display'  : 'Win %',
+                        'calculate': 'wins_bedwars / games_played_bedwars',
+                        'position' : 'Games Played'
+                    }, {
+                        'display'  : 'Final KDR',
+                        'calculate': 'final_kills_bedwars / final_deaths_bedwars',
+                        'position' : 'Final Deaths'
+                    }
+            ]
+
+    stats  = [
+                {
+                    'key_name': 'eight_one_wins_bedwars',
+                    'display': 'Solo Wins'
+                }, {
+                    'key_name': 'eight_two_wins_bedwars',
+                    'display': 'Duos Wins'
+                }, {
+                    'key_name': 'four_four_wins_bedwars',
+                    'display': 'Trios Wins'
+                }, {
+                    'key_name': 'four_three_wins_bedwars',
+                    'display': '4v4v4v4 Wins'
+                }, {
+                    'key_name': 'two_four_wins_bedwars',
+                    'display': '4v4 Wins'
+                }, {
+                    'key_name': 'wins_bedwars',
+                    'display': 'Total Wins'
+                }, {
+                    'key_name': 'games_played_bedwars',
+                    'display': 'Games Played'
+                }, {
+                    'key_name': 'kills_bedwars',
+                    'display': 'Kills'
+                }, {
+                    'key_name': 'deaths_bedwars',
+                    'display': 'Deaths'
+                }, {
+                    'key_name': 'final_kills_bedwars',
+                    'display': 'Final Kills'
+                }, {
+                    'key_name': 'final_deaths_bedwars',
+                    'display': 'Final Deaths'
+                }
+            ]
+    reverse_stats = ['Deaths', 'Final Deaths']
+
+
+class Skywars(PlayerCompare):
+    keys = ['player', 'stats', 'SkyWars']
+    ratios = [
+                {
+                    'display'  : 'KDR',
+                    'calculate': 'kills / deaths',
+                    'position' : 'Deaths'
+                }, {
+                    'display'  : 'Win %',
+                    'calculate': 'wins / games',
+                    'position' : 'Games Played'
+                }
+        ]
+
+    stats  = [
+                {
+                    'key_name': 'wins_solo',
+                    'display': 'Solo Wins'
+                }, {
+                    'key_name': 'wins_team',
+                    'display': 'Team Wins'
+                }, {
+                    'key_name': 'wins_mega',
+                    'display': 'Mega Wins'
+                }, {
+                    'key_name': 'wins_ranked',
+                    'display': 'Ranked Wins'
+                }, {
+                    'key_name': 'wins',
+                    'display': 'Total Wins'
+                }, {
+                    'key_name': 'games',
+                    'display': 'Games Played'
+                }, {
+                    'key_name': 'kills',
+                    'display': 'Kills'
+                }, {
+                    'key_name': 'deaths',
+                    'display': 'Deaths'
+                }
+            ]
+
+    reverse_stats = ['Deaths']
+
+
+class Pit(PlayerCompare):
+    keys = ['player', 'stats', 'Pit', 'pit_stats_ptl']
+    ratios = [
+                {
+                    'display'  : 'KDR',
+                    'calculate': 'kills / deaths',
+                    'position': 'Deaths'
+                }, {
+                    'display'  : 'K+A DR',
+                    'calculate': '(kills + assists) / deaths',
+                    'position' : 'KDR'
+                }
+        ]
+
+    stats = [
+                {
+                    'key_name': 'playtime_minutes',
+                    'display': 'Minutes'
+                }, {
+                    'key_name': 'kills',
+                    'display': 'Kills'
+                }, {
+                    'key_name': 'assists',
+                    'display': 'Assists'
+                }, {
+                    'key_name': 'deaths',
+                    'display': 'Deaths'
+                }, {
+                    'key_name': 'max_streak',
+                    'display': 'Best Streak'
+                }
+        ]
+
+    reverse_stats = ['Deaths']
 
 
 if __name__ == '__main__':
-    playercomp = PlayerCompare(['parcerx', 'GL4CIER_FIST', 'ronansfire', 'Red_Lightning9', 'Catwing37'])
+    # playercomp = PlayerCompare(['parcerx', 'GL4CIER_FIST', 'ronansfire', 'Red_Lightning9', 'Catwing37'])
     #result = (playercomp.bedwars())
-
-    print(playercomp.pit())
+    new = Bedwars(['parcerx', 'Red_Lightning9', 'Gl4CIER_FIST', 'ronansfire', 'Catwing37'])
+    print(new)
+    # print(playercomp.pit())
 
     exit()
