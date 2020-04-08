@@ -1,0 +1,13 @@
+#!/bin/bash
+
+cd /home/pi/chamosbot
+
+python3 hypixel.py parcerx gl4cier_fist red_lightning9 ronansfire catwing37
+
+cd /home/pi/hypixel-player-data
+
+git add data.json
+
+git commit -m "Update data"
+
+git push

@@ -1,3 +1,6 @@
+import sys
+
+import datetime
 import json
 import re
 import requests
@@ -7,6 +10,8 @@ from utils import matrix
 hypixel_api = json.loads(open('credentials.json').read())['hypixel-api-key']
 
 class PlayerCompare():
+    game = None
+
     def __build_table(self):
         datasets = self.datasets
         stats = self.stats
@@ -47,6 +52,8 @@ class PlayerCompare():
         return table
 
     def __init__(self, igns):
+        if self.game is None:
+            raise Exception('Base PlayerCompare class called, no game specified')
         self.igns = igns
         self.datasets = []
         self.datas = []
@@ -83,8 +90,12 @@ class PlayerCompare():
             fail_string += '\nTry checking the spelling of the name'
         return '{0}{1}'.format(str(table), fail_string)
 
+    def export(self, to_json=True):
+        return json.dumps(self.datas) if to_json is True else self.datas
+
 
 class Bedwars(PlayerCompare):
+    game = 'Bedwars'
     keys = ['player', 'stats', 'Bedwars']
     ratios = [
                     {
@@ -142,6 +153,7 @@ class Bedwars(PlayerCompare):
 
 
 class Skywars(PlayerCompare):
+    game = 'Skywars'
     keys = ['player', 'stats', 'SkyWars']
     ratios = [
                 {
@@ -187,6 +199,7 @@ class Skywars(PlayerCompare):
 
 
 class Pit(PlayerCompare):
+    game = 'Pit'
     keys = ['player', 'stats', 'Pit', 'pit_stats_ptl']
     ratios = [
                 {
@@ -222,11 +235,63 @@ class Pit(PlayerCompare):
     reverse_stats = ['Deaths']
 
 
-if __name__ == '__main__':
-    # playercomp = PlayerCompare(['parcerx', 'GL4CIER_FIST', 'ronansfire', 'Red_Lightning9', 'Catwing37'])
-    #result = (playercomp.bedwars())
-    new = Bedwars(['parcerx', 'Red_Lightning9', 'Gl4CIER_FIST', 'ronansfire', 'Catwing37'])
-    print(new)
-    # print(playercomp.pit())
+def get_fields(data):
+    # Stats to track:
+    stats = {
+                'player stats Bedwars': ['wins_bedwars', 'kills_bedwars', 'deaths_bedwars',
+                                         'final_kills_bedwars', 'final_deaths_bedwars',
+                                         'games_played_bedwars']
+        }
 
-    exit()
+    result = {}
+
+    for key, fields in stats.items():
+        current = {}
+        indexes = key.split()
+        dataset = data
+        for i in indexes:
+            dataset = dataset[i]
+
+        for field in fields:
+            current[field] = dataset[field]
+
+        result[indexes[-1]] = current
+
+    return result
+
+
+def timestrings(today):
+    one_day = datetime.timedelta(days=1)
+
+    # Getting the strings for the hour and yesterday are pretty simple
+    hour = today.strftime('%Y%m%d-%H0000')
+    yesterday = (today - one_day).strftime('%Y%m%d')
+
+    # Get string for last month
+    first = today.replace(day=1)
+    last_month = (first - one_day).strftime('%Y%m')
+    return (hour, yesterday, last_month)
+
+
+if __name__ == '__main__':
+    # path to directory where data is stored
+    data_path = '/home/pi/hypixel-player-data/data.json'
+    current_data = json.loads(open(data_path, 'r').read())
+
+    # Get names of players to record stats for
+    usernames = sys.argv[1:]
+    # Get strings representing the timestamp for this data, yesterday's data, and week-old data
+    now, yesterday, last_month = timestrings(datetime.datetime.now())
+
+    data = list(map(get_fields, Bedwars(usernames).export(to_json=False)))
+
+    players = list(map(lambda x: {x[0].lower(): x[1]}, zip(usernames, data)))
+
+    result = {}
+    for player in players:
+        ign, stats = list(player.items())[0]
+        result[ign] = stats
+
+    current_data[now] = result
+    with open(data_path, 'w') as data_file:
+        data_file.write(json.dumps(current_data))
