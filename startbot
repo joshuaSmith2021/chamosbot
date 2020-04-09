@@ -2,4 +2,4 @@
 
 cd /home/pi/chamosbot
 
-setsid python3 /home/pi/chamosbot/chamos.py >> /home/pi/chamosbot/logs/$(python3 -c "import datetime;print(datetime.datetime.now().strftime('%Y%m%d'))").log &
+python3 /home/pi/chamosbot/chamos.py >> /home/pi/chamosbot/logs/$(python3 -c "import datetime;print(datetime.datetime.now().strftime('%Y%m%d'))").log &

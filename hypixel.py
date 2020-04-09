@@ -84,7 +84,7 @@ class PlayerCompare():
 
     def __str__(self):
         table = self.__build_table()
-        fail_string = ''
+        fail_string = '\n* KPG = Kills per Game\n* FKPG = Final Kills per Game' if self.game == 'Bedwars' else ''
         if len(self.fails) > 0:
             fail_string = '\n\nNo data found for the following player{0}: {1}'.format('s' if len(self.fails) > 1 else '', ', '.join(self.fails))
             fail_string += '\nTry checking the spelling of the name'
@@ -110,6 +110,14 @@ class Bedwars(PlayerCompare):
                         'display'  : 'Final KDR',
                         'calculate': 'final_kills_bedwars / final_deaths_bedwars',
                         'position' : 'Final Deaths'
+                    }, {
+                        'display'  : 'KPG',
+                        'calculate': 'kills_bedwars / games_played_bedwars',
+                        'position' : 'Final KDR'
+                    }, {
+                        'display'  : 'FKPG',
+                        'calculate': 'final_kills_bedwars / games_played_bedwars',
+                        'position' : 'KPG'
                     }
             ]
 

@@ -1,13 +1,15 @@
 #!/bin/bash
-
+echo ---------------------
+echo Changing Directory...
 cd /home/pi/chamosbot
-
-python3 hypixel.py parcerx gl4cier_fist red_lightning9 ronansfire catwing37
-
+echo Updating data file...
+python3 hypixel.py parcerx gl4cier_fist red_lightning9 ronansfire catwing37 gamerboy80 purpled
+echo Changing directory...
 cd /home/pi/hypixel-player-data
-
+echo Staging change for commit...
 git add data.json
-
+echo Committing change...
 git commit -m "Update data"
-
+echo Pushing data to remote
 git push
+echo ---------------------

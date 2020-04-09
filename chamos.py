@@ -41,6 +41,8 @@ class ChamosBot(discord.Client):
             usernames  = parameters[1:]
             log('Game: {1}; Usernames: {0}'.format(', '.join(usernames), game))
 
+            stats_page = 'http://chamosbotonline.herokuapp.com/bedwars?igns={0}'.format('.'.join(usernames))
+
             comparison = None
             if game.lower() == 'bedwars':
                 comparison = str(hypixel.Bedwars(usernames))
@@ -51,8 +53,14 @@ class ChamosBot(discord.Client):
 
             final_msg  = '```\n{0}\n```'.format(comparison if game.lower() in games and comparison else game_string)
             await message.channel.send(final_msg)
+            if game.lower() == 'bedwars':
+                await message.channel.send(embed=discord.Embed(title='Chamosbot Online', url=stats_page, description='Check out their stats over time!'))
             log('Successfully served {1} stat comparison for {0}'.format(', '.join(usernames), game))
-
+        elif message.content.startswith('!link'):
+            parameters = message.content.split()[1:]
+            usernames = parameters
+            stats_page = 'http://chamosbotonline.herokuapp.com/bedwars?igns={0}'.format('.'.join(usernames))
+            await message.channel.send(embed=discord.Embed(title='Chamosbot Online', url=stats_page, description='Check out their stats over time!'))
 
     async def on_member_join(self, member):
         guild = member.guild
