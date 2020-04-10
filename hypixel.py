@@ -291,8 +291,8 @@ def timestrings(today):
 if __name__ == '__main__':
     # path to directory where data is stored
     # While testing, leave as none
-    # data_dir = None
     data_dir = '/home/pi/hypixel-player-data'
+    data_dir = None
     if sys.argv[-1] == 'INITIALIZE':
         data_directory = '/home/pi/chamosbot/hypixel-player-data' if data_dir is None else data_dir
         data_path = '{0}/data.json'.format(data_directory)
@@ -309,6 +309,8 @@ if __name__ == '__main__':
         hourly_files = list(filter(lambda x: re.match('^[0-9]{8}-[0-2][0-9]0000.json$', x), os.listdir(data_directory)))
         hourly_files.sort(reverse=True)
 
+        daily_files = list(filter(lambda x: re.match('^[0-9]{8}.json$', x), os.listdir(data_directory)))
+
         # Get a list of files from midnight
         midnight_files = filter(lambda x: re.match(r'^[0-9]{8}-0{6}.json$', x), hourly_files)
         for day in midnight_files:
@@ -316,7 +318,7 @@ if __name__ == '__main__':
             with open('{1}/{0}.json'.format(day_name, data_directory), 'w') as current_file:
                 current_file.write(open('{1}/{0}'.format(day, data_directory)).read())
 
-        datasets = {'today': hourly_files[:24], 'twodays': hourly_files[:48]}
+        datasets = {'today': hourly_files[:24], 'twodays': hourly_files[:48], 'thisweek': daily_files[:7]}
 
         for file_name, dataset in datasets.items():
             final_data = {}
