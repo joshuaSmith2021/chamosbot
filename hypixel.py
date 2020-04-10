@@ -1,3 +1,4 @@
+import os
 import sys
 
 import datetime
@@ -243,6 +244,12 @@ class Pit(PlayerCompare):
     reverse_stats = ['Deaths']
 
 
+# ================================================ #
+# Below is focused on keeping logs of player stats #
+# over time. It uses the above classes to fetch    #
+# data, and then updates a local directory.        #
+# ================================================ #
+
 def get_fields(data):
     # Stats to track:
     stats = {
@@ -283,23 +290,61 @@ def timestrings(today):
 
 if __name__ == '__main__':
     # path to directory where data is stored
-    data_path = '/home/pi/hypixel-player-data/data.json'
-    current_data = json.loads(open(data_path, 'r').read())
+    # While testing, leave as none
+    # data_dir = None
+    data_dir = '/home/pi/hypixel-player-data'
+    if sys.argv[-1] == 'INITIALIZE':
+        data_directory = '/home/pi/chamosbot/hypixel-player-data' if data_dir is None else data_dir
+        data_path = '{0}/data.json'.format(data_directory)
+        current_data = json.loads(open(data_path).read())
+        # Build individual json files for each hour; make a maximum of 48
+        for date in filter(lambda x: re.match('^[0-9]{8}-[0-2][0-9]0000$', x), current_data.keys()):
+            with open('{1}/{0}.json'.format(date, data_directory), 'w') as data_file:
+                data_file.write(json.dumps(current_data[date]))
 
-    # Get names of players to record stats for
-    usernames = sys.argv[1:]
-    # Get strings representing the timestamp for this data, yesterday's data, and week-old data
-    now, yesterday, last_month = timestrings(datetime.datetime.now())
+    elif sys.argv[-1] == 'BUILD':
+        # Build files for the last 24 hours, 48 hours, 14 days, 7 days,
+        # and monthly records
+        data_directory = '/home/pi/chamosbot/hypixel-player-data' if data_dir is None else data_dir
+        hourly_files = list(filter(lambda x: re.match('^[0-9]{8}-[0-2][0-9]0000.json$', x), os.listdir(data_directory)))
+        hourly_files.sort(reverse=True)
 
-    data = list(map(get_fields, Bedwars(usernames).export(to_json=False)))
+        # Get a list of files from midnight
+        midnight_files = filter(lambda x: re.match(r'^[0-9]{8}-0{6}.json$', x), hourly_files)
+        for day in midnight_files:
+            day_name = day[:8]
+            with open('{1}/{0}.json'.format(day_name, data_directory), 'w') as current_file:
+                current_file.write(open('{1}/{0}'.format(day, data_directory)).read())
 
-    players = list(map(lambda x: {x[0].lower(): x[1]}, zip(usernames, data)))
+        datasets = {'today': hourly_files[:24], 'twodays': hourly_files[:48]}
 
-    result = {}
-    for player in players:
-        ign, stats = list(player.items())[0]
-        result[ign] = stats
+        for file_name, dataset in datasets.items():
+            final_data = {}
+            for timestamp in dataset:
+                final_data[timestamp.replace('.json', '')] = json.loads(open('{1}/{0}'.format(timestamp, data_directory)).read())
+            
+            with open('{1}/{0}.json'.format(file_name, data_directory), 'w') as current_file:
+                current_file.write(json.dumps(final_data))
 
-    current_data[now] = result
-    with open(data_path, 'w') as data_file:
-        data_file.write(json.dumps(current_data))
+    elif sys.argv[-1] == 'CLEAN':
+        # Eventually, this will delete old files
+        exit()
+    elif sys.argv[-1] == 'UPDATE':
+        data_directory = '/home/pi/chamosbot/hypixel-player-data' if data_dir is None else data_dir
+
+        # Get names of players to record stats for
+        usernames = sys.argv[1:-1]
+        # Get strings representing the timestamp for this data, yesterday's data, and week-old data
+        hour = timestrings(datetime.datetime.now())[0]
+
+        data = list(map(get_fields, Bedwars(usernames).export(to_json=False)))
+
+        players = list(map(lambda x: {x[0].lower(): x[1]}, zip(usernames, data)))
+
+        result = {}
+        for player in players:
+            ign, stats = list(player.items())[0]
+            result[ign] = stats
+
+        with open('{1}/{0}.json'.format(hour, data_directory), 'w') as data_file:
+            data_file.write(json.dumps(result))
