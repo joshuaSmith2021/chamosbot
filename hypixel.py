@@ -102,7 +102,7 @@ class Bedwars(PlayerCompare):
                     {
                         'display'  : 'KDR',
                         'calculate': 'kills_bedwars / deaths_bedwars',
-                        'position' : 'Deaths'
+                        'position' : 'Final Deaths'
                     }, {
                         'display'  : 'Win %',
                         'calculate': 'wins_bedwars / games_played_bedwars',
@@ -110,11 +110,11 @@ class Bedwars(PlayerCompare):
                     }, {
                         'display'  : 'Final KDR',
                         'calculate': 'final_kills_bedwars / final_deaths_bedwars',
-                        'position' : 'Final Deaths'
+                        'position' : 'KDR'
                     }, {
                         'display'  : 'KPG',
                         'calculate': 'kills_bedwars / games_played_bedwars',
-                        'position' : 'Final KDR'
+                        'position' : 'Beds Broken'
                     }, {
                         'display'  : 'FKPG',
                         'calculate': 'final_kills_bedwars / games_played_bedwars',
@@ -156,7 +156,10 @@ class Bedwars(PlayerCompare):
                 }, {
                     'key_name': 'final_deaths_bedwars',
                     'display': 'Final Deaths'
-                }
+                }, {
+                    'key_name': 'beds_broken_bedwars',
+                    'display': 'Beds Broken'
+		}
             ]
     reverse_stats = ['Deaths', 'Final Deaths']
 
@@ -292,7 +295,8 @@ if __name__ == '__main__':
     # path to directory where data is stored
     # While testing, leave as none
     data_dir = '/home/pi/hypixel-player-data'
-    data_dir = None
+    # data_dir = None
+
     if sys.argv[-1] == 'INITIALIZE':
         data_directory = '/home/pi/chamosbot/hypixel-player-data' if data_dir is None else data_dir
         data_path = '{0}/data.json'.format(data_directory)
