@@ -334,6 +334,12 @@ if __name__ == '__main__':
 
     elif sys.argv[-1] == 'CLEAN':
         # Eventually, this will delete old files
+        data_directory = '/home/pi/chamosbot/hypixel-player-data' if data_dir is None else data_dir
+        hourly_files = list(filter(lambda x: re.match('^[0-9]{8}-[0-2][0-9]0000.json$', x), os.listdir(data_directory)))
+        hourly_files.sort(reverse=True)
+        old_hourly_files = hourly_files[48:]
+        for old_file in old_hourly_files:
+            os.remove('{1}/{0}'.format(old_file, data_directory))
         exit()
     elif sys.argv[-1] == 'UPDATE':
         data_directory = '/home/pi/chamosbot/hypixel-player-data' if data_dir is None else data_dir
