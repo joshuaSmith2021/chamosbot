@@ -47,19 +47,3 @@ async def register_hypixel_api_key(message, bot):
     else:
        await user.send('It seems like the command you sent didn\'t have the right parameters. Please make sure your command follows the format: {0}'.format(command_format))
        await user.send('For help, please visit {0}'.format(website_link))
-
-
-def get_ip():
-    page = requests.get('https://secret-forest-58202.herokuapp.com/').text
-    return re.findall(r'0\.tcp\.ngrok\.io:[0-9]{5}', page)[0]
-
-
-async def get_gif(query):
-    try:
-        giphy_token = giphy_key
-        response = giphy.gifs_search_get(giphy_token, query, limit=20, rating='g')
-        gifs = list(response.data)
-        random.shuffle(gifs)
-        return gifs[0].url
-    except ApiException as e:
-        return 'Uh oh, I couldn\'t grab the {0} gif...'.format(query)

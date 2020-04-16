@@ -20,17 +20,7 @@ class ChamosBot(discord.Client):
         if message.author.id == self.user.id:
             return
 
-        if message.content.startswith('!ip'):
-            log('Requesting server IP')
-            await message.channel.send('The *survival* server\'s ip is icecraft.hosthorde.net. This IP isn\'t going to change anytime soon! The *PVP* server\'s IP is currently {0}. Heads up, this IP tends to change!'.format(tools.get_ip()))
-            log('Successfully served server IP')
-        elif message.content.startswith('pls corgi'):
-            log('Getting corgi gif')
-            gif = await tools.get_gif('corgi')
-            await message.channel.send(gif)
-            await message.channel.send('https://www.danasilver.org/giphymessages/PoweredBy_Horizontal_Light-Backgrounds.gif')
-            log('Successfully served corgi gif')
-        elif message.content.startswith('!stats'):
+        if message.content.startswith('!stats'):
             # Message should be !stats [bedwars|skywars|pit] ign ign ign
             games = ['bedwars', 'skywars', 'pit', 'bw', 'sw']
             game_string = 'Oops, looks like the game you asked for is invalid! {0} are available'.format(', '.join(games))
