@@ -5,6 +5,7 @@ import json
 
 import discord
 import tools
+from tools import log
 import hypixel
 
 def log(text):
@@ -21,36 +22,14 @@ class ChamosBot(discord.Client):
             return
 
         if message.content.startswith('!stats'):
-            # Message should be !stats [bedwars|skywars|pit] ign ign ign
-            games = ['bedwars', 'skywars', 'pit', 'bw', 'sw']
-            game_string = 'Oops, looks like the game you asked for is invalid! {0} are available'.format(', '.join(games))
-            log('Stats requested with "{0}"'.format(message.content))
-            parameters = message.content.split()[1:]
+            await tools.get_game_stats(message, self)
 
-            game = parameters[0]
-            usernames  = parameters[1:]
-            log('Game: {1}; Usernames: {0}'.format(', '.join(usernames), game))
-
-            stats_page = 'http://chamosbotonline.herokuapp.com/bedwars?igns={0}'.format('.'.join(usernames))
-
-            comparison = None
-            if game.lower() in ['bedwars', 'bw']:
-                comparison = str(hypixel.Bedwars(usernames))
-            elif game.lower() in ['skywars', 'sw']:
-                comparison = str(hypixel.Skywars(usernames))
-            elif  game.lower() == 'pit':
-                comparison = str(hypixel.Pit(usernames))
-
-            final_msg  = '```\n{0}\n```'.format(comparison if game.lower() in games and comparison else game_string)
-            await message.channel.send(final_msg)
-            if game.lower() == 'bedwars':
-                await message.channel.send(embed=discord.Embed(title='Chamosbot Online', url=stats_page, description='Check out their stats over time!'))
-            log('Successfully served {1} stat comparison for {0}'.format(', '.join(usernames), game))
         elif message.content.startswith('!link'):
             parameters = message.content.split()[1:]
             usernames = parameters
             stats_page = 'http://chamosbotonline.herokuapp.com/bedwars?igns={0}'.format('.'.join(usernames))
             await message.channel.send(embed=discord.Embed(title='Chamosbot Online', url=stats_page, description='Check out their stats over time!'))
+
         elif message.content.startswith('!apikey'):
             await tools.register_hypixel_api_key(message, self)
 
