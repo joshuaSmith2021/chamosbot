@@ -32,7 +32,7 @@ class ChamosBot(discord.Client):
             log('Successfully served corgi gif')
         elif message.content.startswith('!stats'):
             # Message should be !stats [bedwars|skywars|pit] ign ign ign
-            games = ['bedwars', 'skywars', 'pit']
+            games = ['bedwars', 'skywars', 'pit', 'bw', 'sw']
             game_string = 'Oops, looks like the game you asked for is invalid! {0} are available'.format(', '.join(games))
             log('Stats requested with "{0}"'.format(message.content))
             parameters = message.content.split()[1:]
@@ -44,9 +44,9 @@ class ChamosBot(discord.Client):
             stats_page = 'http://chamosbotonline.herokuapp.com/bedwars?igns={0}'.format('.'.join(usernames))
 
             comparison = None
-            if game.lower() == 'bedwars':
+            if game.lower() in ['bedwars', 'bw']:
                 comparison = str(hypixel.Bedwars(usernames))
-            elif game.lower() == 'skywars':
+            elif game.lower() in ['skywars', 'sw']:
                 comparison = str(hypixel.Skywars(usernames))
             elif  game.lower() == 'pit':
                 comparison = str(hypixel.Pit(usernames))
@@ -61,6 +61,9 @@ class ChamosBot(discord.Client):
             usernames = parameters
             stats_page = 'http://chamosbotonline.herokuapp.com/bedwars?igns={0}'.format('.'.join(usernames))
             await message.channel.send(embed=discord.Embed(title='Chamosbot Online', url=stats_page, description='Check out their stats over time!'))
+        elif message.content.startswith('!apikey'):
+            await tools.register_hypixel_api_key(message, self)
+
 
     async def on_member_join(self, member):
         guild = member.guild
