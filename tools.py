@@ -20,7 +20,7 @@ async def get_game_stats(message, bot):
     parameters = message.content.split()[1:]
 
     try:
-        api_key = json.loads(open('credentials.json').read())['hypixel-api-keys'][str(message.guild.id)]
+        api_key = random.choice(json.loads(open('credentials.json').read())['hypixel-api-keys'][str(message.guild.id)])
     except KeyError as err:
         await message.channel.send('It looks like your server does not have a Hypixel API key connected! Please use command `!apikey` to get connected!')
         log('{0} did not have an API key connected'.format(message.guild))
@@ -55,7 +55,7 @@ async def register_hypixel_api_key(message, bot):
     if args == []:
         # User only sent !apikey, so DM them asking for more
         await user.send('Thanks for connecting your server to ChamosBot! Please reply to this direct message with the following command: {0} For help finding these, check out {1}/commands/apikey'.format(command_format, website_link))
-        if guild is not None: await user.send('btw... it looks like your server ID is {0}'.format(guild.id))
+        if guild is not None: await user.send('btw... it looks like your server ID is {0}, and you should know that your API key will NOT be used by ChamosBot or anyobdy else for anything except providing access to the ChamosBot on your discord server.'.format(guild.id))
     elif len(args) == 2:
         # User sent both parameters, test and save API key
         if guild is not None:
@@ -70,7 +70,14 @@ async def register_hypixel_api_key(message, bot):
             await user.send('Your key is working! I\'m linking your guild to the key, and I will notify you when the registration is complete.')
 
             current_data = json.loads(open('credentials.json').read())
-            current_data['hypixel-api-keys'][guild_id] = key
+            # If the guild already has a key, add the key to the list
+            try:
+                current_data['hypixel-api-keys'][guild_id].append(key)
+            except KeyError as err:
+                # If the guild does not have a key, a keyerror will be raised, and
+                #   this exception handler just creates a new list of keys for the guild
+                current_data['hypixel-api-keys'][guild_id] = [key]
+
             with open('credentials.json', 'w') as credentials_file:
                 credentials_file.write(json.dumps(current_data, indent=4, sort_keys=True))
 
