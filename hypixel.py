@@ -52,7 +52,7 @@ class PlayerCompare():
 
         return table
 
-    def __init__(self, igns):
+    def __init__(self, igns, apikey=None):
         if self.game is None:
             raise Exception('Base PlayerCompare class called, no game specified')
         self.igns = igns

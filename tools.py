@@ -19,6 +19,13 @@ async def get_game_stats(message, bot):
     log('Stats requested with "{0}"'.format(message.content))
     parameters = message.content.split()[1:]
 
+    try:
+        api_key = json.loads(open('credentials.json').read())['hypixel-api-keys'][str(message.guild.id)]
+    except KeyError as err:
+        await message.channel.send('It looks like your server does not have a Hypixel API key connected! Please use command `!apikey` to get connected!')
+        log('{0} did not have an API key connected'.format(message.guild))
+        return
+
     game = parameters[0]
     usernames  = parameters[1:]
     log('Game: {1}; Usernames: {0}'.format(', '.join(usernames), game))
@@ -27,11 +34,11 @@ async def get_game_stats(message, bot):
 
     comparison = None
     if game.lower() in ['bedwars', 'bw']:
-        comparison = str(hypixel.Bedwars(usernames))
+        comparison = str(hypixel.Bedwars(usernames, apikey=api_key))
     elif game.lower() in ['skywars', 'sw']:
-        comparison = str(hypixel.Skywars(usernames))
+        comparison = str(hypixel.Skywars(usernames, apikey=api_key))
     elif  game.lower() == 'pit':
-        comparison = str(hypixel.Pit(usernames))
+        comparison = str(hypixel.Pit(usernames, apikey=api_key))
 
     final_msg  = '```\n{0}\n```'.format(comparison if game.lower() in games and comparison else game_string)
     await message.channel.send(final_msg)
