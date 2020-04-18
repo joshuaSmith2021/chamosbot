@@ -8,8 +8,9 @@ import tools
 from tools import log
 import hypixel
 
+
 def log(text):
-    print('{0}: {1}'.format(datetime.datetime.now().strftime('%Y-%m-%d %H%M%S'), text))
+    print('{0}: {1}'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), text))
 
 
 class ChamosBot(discord.Client):
@@ -30,8 +31,15 @@ class ChamosBot(discord.Client):
             stats_page = 'http://chamosbotonline.herokuapp.com/bedwars?igns={0}'.format('.'.join(usernames))
             await message.channel.send(embed=discord.Embed(title='Chamosbot Online', url=stats_page, description='Check out their stats over time!'))
 
-        elif message.content.startswith('!apikey'):
+        elif message.content.startswith('!addkey'):
             await tools.register_hypixel_api_key(message, self)
+
+        elif message.content.startswith('!revokekey'):
+            await tools.remove_hypixel_api_key(message, self)
+
+        elif message.content.startswith('!listkeys'):
+            # Show the user which servers their key is in
+            await tools.get_connected_servers(message, self)
 
 
     async def on_member_join(self, member):
