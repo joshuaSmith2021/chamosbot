@@ -47,8 +47,6 @@ async def get_game_stats(message, bot):
 
     comparison = None
     if game.lower() in ['bedwars', 'bw']:
-        cls = hypixel.Bedwars(usernames, apikey=api_key, game_mode=game_mode)
-        k2 = cls.__class__
         comparison = str(hypixel.Bedwars(usernames, apikey=api_key, game_mode=game_mode))
     elif game.lower() in ['skywars', 'sw']:
         comparison = str(hypixel.Skywars(usernames, apikey=api_key, game_mode=game_mode))

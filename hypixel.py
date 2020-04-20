@@ -19,15 +19,11 @@ class PlayerCompare():
         stats = self.stats
         ratios = self.ratios
         table = matrix.Table(just='right')
-
-        print('----- BEFORE ------')
-        print(stats)
-        print()
-        print(ratios)
+        mode_name = ''
 
         if self.game_mode is not None and self.game_modes is not None and self.game_mode in [x[0] for x in self.game_modes]:
             mode = self.game_mode
-            mode_position = [x for x in self.game_modes if x[0] == self.game_mode][0][1]
+            mode_position, mode_name = [x for x in self.game_modes if x[0] == self.game_mode][0][1:]
             new_stats = []
             for stat in stats:
                 key = stat['key_name']
@@ -50,8 +46,7 @@ class PlayerCompare():
                     else:
                         final_expression.append(term)
 
-                ratio['calculate'] = ' '.join(final_expression)
-                new_ratios.append(ratio)
+                new_ratios.append({'calculate': ' '.join(final_expression), 'display': ratio['display'], 'position': ratio['position']})
             ratios = new_ratios
         else:
             new_stats = []
@@ -62,22 +57,13 @@ class PlayerCompare():
 
             new_ratios = []
             for ratio in ratios:
-                ratio['calculate'] = re.sub('[\?!]', '', ratio['calculate'])
-                new_ratios.append(ratio)
+                new_ratios.append({'calculate': re.sub('[\?!]', '', ratio['calculate']), 'display': ratio['display'], 'position': ratio['position']})
             ratios = new_ratios
-
-        print('----- AFTER ------')
-        print(stats)
-        print()
-        print(ratios)
-        print('------------------')
-
 
         # Construct basic table, but make every entry a string
         table.append(list(map(str, [''] + self.igns)))
         for stat in stats:
             table.append([stat['display']] + list(map(lambda x: str(x.get(stat['key_name'], 0)), datasets)))
-
 
         if ratios is not None:
             for ratio in ratios:
@@ -153,8 +139,8 @@ class PlayerCompare():
 class Bedwars(PlayerCompare):
     game = 'Bedwars'
     keys = ['player', 'stats', 'Bedwars']
-    game_modes = [('eight_one', 'prefix'), ('eight_two', 'prefix'), ('four_three', 'prefix'),
-                  ('four_four', 'prefix'), ('two_four', 'prefix')]
+    game_modes = [('eight_one', 'prefix', 'Solo'), ('eight_two', 'prefix', 'Doubles'), ('four_three', 'prefix', 'Threes'),
+                  ('four_four', 'prefix', '4v4v4v4'), ('two_four', 'prefix', '4v4')]
 
     ratios = [
                     {
@@ -225,42 +211,48 @@ class Bedwars(PlayerCompare):
 class Skywars(PlayerCompare):
     game = 'Skywars'
     keys = ['player', 'stats', 'SkyWars']
+    game_modes = [('solo', 'suffix', 'Solo'), ('team', 'suffix', 'Team'), ('mega', 'suffix', 'Mega'),
+                  ('solo_normal', 'suffix', 'Solo Normal'), ('solo_insane', 'suffix', 'Solo Insane'),
+                  ('team_normal', 'suffix', 'Team Normal'), ('team_insane', 'suffix', 'Team Insane'),
+                  ('mega_normal', 'suffix', 'Mega Normal'), ('ranked', 'suffix', 'Ranked'),
+                  'ranked_normal', 'suffix', 'Ranked Normal']
+
     ratios = [
                 {
                     'display'  : 'KDR',
-                    'calculate': 'kills / deaths',
+                    'calculate': '?kills / ?deaths',
                     'position' : 'Deaths'
                 }, {
                     'display'  : 'Win %',
-                    'calculate': 'wins / losses',
+                    'calculate': '?wins / ?losses',
                     'position' : 'Games Played'
                 }
         ]
 
     stats  = [
                 {
-                    'key_name': 'wins_solo',
+                    'key_name': '!wins_solo',
                     'display': 'Solo Wins'
                 }, {
-                    'key_name': 'wins_team',
+                    'key_name': '!wins_team',
                     'display': 'Team Wins'
                 }, {
-                    'key_name': 'wins_mega',
+                    'key_name': '!wins_mega',
                     'display': 'Mega Wins'
                 }, {
-                    'key_name': 'wins_ranked',
+                    'key_name': '!wins_ranked',
                     'display': 'Ranked Wins'
                 }, {
-                    'key_name': 'wins',
+                    'key_name': '?wins',
                     'display': 'Total Wins'
                 }, {
-                    'key_name': 'games',
+                    'key_name': '?games',
                     'display': 'Games Played'
                 }, {
-                    'key_name': 'kills',
+                    'key_name': '?kills',
                     'display': 'Kills'
                 }, {
-                    'key_name': 'deaths',
+                    'key_name': '?deaths',
                     'display': 'Deaths'
                 }
             ]
@@ -419,4 +411,5 @@ if __name__ == '__main__':
         with open('{1}/{0}.json'.format(hour, data_directory), 'w') as data_file:
             data_file.write(json.dumps(result))
     elif sys.argv[-1] == 'API':
-        print(Duos_Bedwars(['parcerx']))
+        print(bw(['parcerx'], game_mode='eight_one'))
+        print(bw(['parcerx'], game_mode='two_four'))
