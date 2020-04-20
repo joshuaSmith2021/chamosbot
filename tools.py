@@ -22,11 +22,15 @@ def log(text):
 
 
 async def get_game_stats(message, bot):
+    await message.channel.send('Sorry, the bot is under development at the moment, so this command might not work')
+    
     # Message should be !stats [bedwars|skywars|pit] ign ign ign
     games = ['bedwars', 'skywars', 'pit', 'bw', 'sw']
     game_string = 'Oops, looks like the game you asked for is invalid! {0} are available'.format(', '.join(games))
     log('Stats requested with "{0}"'.format(message.content))
     parameters = message.content.split()[1:]
+    usernames = [x for x in parameters[1:] if x[0] != '-']
+    flags = [x[1:] for x in parameters[1:] if x[0] == '-']
 
     try:
         api_key = random.choice(json.loads(open('credentials.json').read())['hypixel-api-keys'][str(message.guild.id)])[0]
@@ -36,18 +40,20 @@ async def get_game_stats(message, bot):
         return
 
     game = parameters[0]
-    usernames  = parameters[1:]
+    game_mode = None if flags == [] else flags[-1]
     log('Game: {1}; Usernames: {0}'.format(', '.join(usernames), game))
 
     stats_page = 'http://chamosbotonline.herokuapp.com/bedwars?igns={0}'.format('.'.join(usernames))
 
     comparison = None
     if game.lower() in ['bedwars', 'bw']:
-        comparison = str(hypixel.Bedwars(usernames, apikey=api_key))
+        cls = hypixel.Bedwars(usernames, apikey=api_key, game_mode=game_mode)
+        k2 = cls.__class__
+        comparison = str(hypixel.Bedwars(usernames, apikey=api_key, game_mode=game_mode))
     elif game.lower() in ['skywars', 'sw']:
-        comparison = str(hypixel.Skywars(usernames, apikey=api_key))
+        comparison = str(hypixel.Skywars(usernames, apikey=api_key, game_mode=game_mode))
     elif  game.lower() == 'pit':
-        comparison = str(hypixel.Pit(usernames, apikey=api_key))
+        comparison = str(hypixel.Pit(usernames, apikey=api_key, game_mode=game_mode))
 
     final_msg  = '```\n{0}\n```'.format(comparison if game.lower() in games and comparison else game_string)
     await message.channel.send(final_msg)

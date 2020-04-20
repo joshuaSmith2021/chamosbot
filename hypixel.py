@@ -12,12 +12,66 @@ hypixel_api = json.loads(open('credentials.json').read())['hypixel-api-key']
 
 class PlayerCompare():
     game = None
+    game_modes = None
 
     def __build_table(self):
         datasets = self.datasets
         stats = self.stats
         ratios = self.ratios
         table = matrix.Table(just='right')
+
+        print('----- BEFORE ------')
+        print(stats)
+        print()
+        print(ratios)
+
+        if self.game_mode is not None and self.game_modes is not None and self.game_mode in [x[0] for x in self.game_modes]:
+            mode = self.game_mode
+            mode_position = [x for x in self.game_modes if x[0] == self.game_mode][0][1]
+            new_stats = []
+            for stat in stats:
+                key = stat['key_name']
+                if key[0] == '!':
+                    # ! means that this stat should not be shown in
+                    #   a specific gamemode table, so do not include
+                    #   it in the final table
+                    continue
+                elif key[0] == '?':
+                    new_stats.append({'key_name': '_'.join([mode, key[1:]] if mode_position == 'prefix' else [key[1:], mode]), 'display': stat['display']})
+            stats = new_stats
+
+            new_ratios = []
+            for ratio in ratios:
+                terms = ratio['calculate'].split()
+                final_expression = []
+                for term in terms:
+                    if term[0] == '?':
+                        final_expression.append('_'.join([mode, term[1:]] if mode_position == 'prefix' else [term[1:], mode]))
+                    else:
+                        final_expression.append(term)
+
+                ratio['calculate'] = ' '.join(final_expression)
+                new_ratios.append(ratio)
+            ratios = new_ratios
+        else:
+            new_stats = []
+            for stat in stats:
+                key = re.sub('[\?!\.]', '', stat['key_name'])
+                new_stats.append({'key_name': key, 'display': stat['display']})
+            stats = new_stats
+
+            new_ratios = []
+            for ratio in ratios:
+                ratio['calculate'] = re.sub('[\?!]', '', ratio['calculate'])
+                new_ratios.append(ratio)
+            ratios = new_ratios
+
+        print('----- AFTER ------')
+        print(stats)
+        print()
+        print(ratios)
+        print('------------------')
+
 
         # Construct basic table, but make every entry a string
         table.append(list(map(str, [''] + self.igns)))
@@ -52,15 +106,16 @@ class PlayerCompare():
 
         return table
 
-    def __init__(self, igns, apikey=None):
+    def __init__(self, igns, apikey=None, game_mode=None):
         if self.game is None:
             raise Exception('Base PlayerCompare class called, no game specified')
         self.igns = igns
         self.datasets = []
         self.datas = []
         self.fails = []
+        self.game_mode = game_mode
         for ign in igns:
-            self.datas.append(requests.get('https://api.hypixel.net/player?key={0}&name={1}'.format(hypixel_api, ign)).json())
+            self.datas.append(requests.get('https://api.hypixel.net/player?key={0}&name={1}'.format(hypixel_api if apikey is None else apikey, ign)).json())
 
         # Validate data, and delete any datasets that had an invalid username
         bad_data = []
@@ -98,66 +153,69 @@ class PlayerCompare():
 class Bedwars(PlayerCompare):
     game = 'Bedwars'
     keys = ['player', 'stats', 'Bedwars']
+    game_modes = [('eight_one', 'prefix'), ('eight_two', 'prefix'), ('four_three', 'prefix'),
+                  ('four_four', 'prefix'), ('two_four', 'prefix')]
+
     ratios = [
                     {
                         'display'  : 'KDR',
-                        'calculate': 'kills_bedwars / deaths_bedwars',
+                        'calculate': '?kills_bedwars / ?deaths_bedwars',
                         'position' : 'Final Deaths'
                     }, {
                         'display'  : 'Win %',
-                        'calculate': 'wins_bedwars / games_played_bedwars',
+                        'calculate': '?wins_bedwars / ?games_played_bedwars',
                         'position' : 'Games Played'
                     }, {
                         'display'  : 'Final KDR',
-                        'calculate': 'final_kills_bedwars / final_deaths_bedwars',
+                        'calculate': '?final_kills_bedwars / ?final_deaths_bedwars',
                         'position' : 'KDR'
                     }, {
                         'display'  : 'KPG',
-                        'calculate': 'kills_bedwars / games_played_bedwars',
+                        'calculate': '?kills_bedwars / ?games_played_bedwars',
                         'position' : 'Beds Broken'
                     }, {
                         'display'  : 'FKPG',
-                        'calculate': 'final_kills_bedwars / games_played_bedwars',
+                        'calculate': '?final_kills_bedwars / ?games_played_bedwars',
                         'position' : 'KPG'
                     }
             ]
 
     stats  = [
                 {
-                    'key_name': 'eight_one_wins_bedwars',
+                    'key_name': '!eight_one_wins_bedwars',
                     'display': 'Solo Wins'
                 }, {
-                    'key_name': 'eight_two_wins_bedwars',
+                    'key_name': '!eight_two_wins_bedwars',
                     'display': 'Duos Wins'
                 }, {
-                    'key_name': 'four_four_wins_bedwars',
+                    'key_name': '!four_three_wins_bedwars',
                     'display': 'Trios Wins'
                 }, {
-                    'key_name': 'four_three_wins_bedwars',
+                    'key_name': '!four_four_wins_bedwars',
                     'display': '4v4v4v4 Wins'
                 }, {
-                    'key_name': 'two_four_wins_bedwars',
+                    'key_name': '!two_four_wins_bedwars',
                     'display': '4v4 Wins'
                 }, {
-                    'key_name': 'wins_bedwars',
+                    'key_name': '?wins_bedwars',
                     'display': 'Total Wins'
                 }, {
-                    'key_name': 'games_played_bedwars',
+                    'key_name': '?games_played_bedwars',
                     'display': 'Games Played'
                 }, {
-                    'key_name': 'kills_bedwars',
+                    'key_name': '?kills_bedwars',
                     'display': 'Kills'
                 }, {
-                    'key_name': 'deaths_bedwars',
+                    'key_name': '?deaths_bedwars',
                     'display': 'Deaths'
                 }, {
-                    'key_name': 'final_kills_bedwars',
+                    'key_name': '?final_kills_bedwars',
                     'display': 'Final Kills'
                 }, {
-                    'key_name': 'final_deaths_bedwars',
+                    'key_name': '?final_deaths_bedwars',
                     'display': 'Final Deaths'
                 }, {
-                    'key_name': 'beds_broken_bedwars',
+                    'key_name': '?beds_broken_bedwars',
                     'display': 'Beds Broken'
 		}
             ]
@@ -174,7 +232,7 @@ class Skywars(PlayerCompare):
                     'position' : 'Deaths'
                 }, {
                     'display'  : 'Win %',
-                    'calculate': 'wins / games',
+                    'calculate': 'wins / losses',
                     'position' : 'Games Played'
                 }
         ]
@@ -360,3 +418,5 @@ if __name__ == '__main__':
 
         with open('{1}/{0}.json'.format(hour, data_directory), 'w') as data_file:
             data_file.write(json.dumps(result))
+    elif sys.argv[-1] == 'API':
+        print(Duos_Bedwars(['parcerx']))
