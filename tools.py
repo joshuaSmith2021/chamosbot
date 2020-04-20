@@ -22,7 +22,7 @@ def log(text):
 
 
 async def get_game_stats(message, bot):
-    await message.channel.send('Sorry, the bot is under development at the moment, so this command might not work')
+    # await message.channel.send('Sorry, this command is under development at the moment, so this command might not work')
     
     # Message should be !stats [bedwars|skywars|pit] ign ign ign
     games = ['bedwars', 'skywars', 'pit', 'bw', 'sw']

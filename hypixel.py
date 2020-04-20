@@ -24,6 +24,7 @@ class PlayerCompare():
         if self.game_mode is not None and self.game_modes is not None and self.game_mode in [x[0] for x in self.game_modes]:
             mode = self.game_mode
             mode_position, mode_name = [x for x in self.game_modes if x[0] == self.game_mode][0][1:]
+            mode_name += ' '
             new_stats = []
             for stat in stats:
                 key = stat['key_name']
@@ -60,8 +61,10 @@ class PlayerCompare():
                 new_ratios.append({'calculate': re.sub('[\?!]', '', ratio['calculate']), 'display': ratio['display'], 'position': ratio['position']})
             ratios = new_ratios
 
+        game_name = mode_name + self.game
+
         # Construct basic table, but make every entry a string
-        table.append(list(map(str, [''] + self.igns)))
+        table.append(list(map(str, [game_name] + self.igns)))
         for stat in stats:
             table.append([stat['display']] + list(map(lambda x: str(x.get(stat['key_name'], 0)), datasets)))
 
@@ -79,7 +82,7 @@ class PlayerCompare():
                 #   to insert the new row in the desired position
                 table.insert(list(zip(*table))[0].index(ratio['position']) + 1, new_row)
 
-        return table if len(self.igns) == 1 else self.__highlight_winners(table)
+        return str(table if len(self.igns) == 1 else self.__highlight_winners(table))
 
     def __highlight_winners(self, table):
         specials = self.reverse_stats
