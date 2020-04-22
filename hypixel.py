@@ -375,7 +375,7 @@ if __name__ == '__main__':
             with open('{1}/{0}.json'.format(day_name, data_directory), 'w') as current_file:
                 current_file.write(open('{1}/{0}'.format(day, data_directory)).read())
 
-        datasets = {'today': hourly_files[:24], 'twodays': hourly_files[:48], 'thisweek': daily_files[:7]}
+        datasets = {'today': hourly_files[:24], 'twodays': hourly_files[:48], 'thisweek': daily_files[:7], 'twoweeks': daily_files[:14], 'thismonth': daily_files[:30]}
 
         for file_name, dataset in datasets.items():
             final_data = {}
