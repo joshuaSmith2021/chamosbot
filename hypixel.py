@@ -393,7 +393,7 @@ if __name__ == '__main__':
         old_hourly_files = hourly_files[48:]
         for old_file in old_hourly_files:
             os.remove('{1}/{0}'.format(old_file, data_directory))
-        exit()
+
     elif sys.argv[-1] == 'UPDATE':
         data_directory = '/home/pi/chamosbot/hypixel-player-data' if data_dir is None else data_dir
 
